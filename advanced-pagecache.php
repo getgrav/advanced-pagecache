@@ -28,7 +28,7 @@ class AdvancedPageCachePlugin extends Plugin
     public static function getSubscribedEvents()
     {
         return [
-            'onPluginsInitialized' => ['onPluginsInitialized', 1000],
+            'onPluginsInitialized' => ['onPluginsInitialized', 1000]
         ];
     }
 
@@ -36,7 +36,7 @@ class AdvancedPageCachePlugin extends Plugin
      * Return `true` if the page has no extension, or has the default page extension.
      * Return `false` if for example is a RSS version of the page
      */
-    private function isValidExtension(): bool
+    private function isValidExtension():bool
     {
         /** @var Uri $uri */
         $uri = $this->grav['uri'];
@@ -46,7 +46,7 @@ class AdvancedPageCachePlugin extends Plugin
             return true;
         }
 
-        $disabled_extensions = (array) $this->grav['config']->get('plugins.advanced-pagecache.disabled_extensions');
+        $disabled_extensions = (array)$this->grav['config']->get('plugins.advanced-pagecache.disabled_extensions');
 
         return !in_array($extension, $disabled_extensions, true);
     }
@@ -59,7 +59,7 @@ class AdvancedPageCachePlugin extends Plugin
         /** @var Uri $uri */
         $uri = $this->grav['uri'];
 
-        $config = (array) $this->grav['config']->get('plugins.advanced-pagecache');
+        $config = (array)$this->grav['config']->get('plugins.advanced-pagecache');
 
         $full_route = $uri->uri();
         $route = str_replace($uri->baseIncludingLanguage(), '', $full_route);
@@ -73,7 +73,7 @@ class AdvancedPageCachePlugin extends Plugin
             return;
         }
         // If this url is not whitelisted try some other tests
-        if (!in_array($route, (array) $config['whitelist'], true)) {
+        if (!in_array($route, (array)$config['whitelist'], true)) {
             // do not run in these scenarios
             if (
                 ($config['disabled_with_params'] && !empty($params)) ||
@@ -95,11 +95,11 @@ class AdvancedPageCachePlugin extends Plugin
         // TODO: remove when minimum required Grav >= 1.7.15
         if (version_compare($this->grav->getVersion(), '1.7.15', '<')) {
             $this->enable([
-                'onOutputGenerated' => ['onOutputGenerated', -1000],
+                'onOutputGenerated' => ['onOutputGenerated', -1000]
             ]);
         } else {
             $this->enable([
-                'onOutputRendered' => ['onOutputRendered', 1000],
+                'onOutputRendered' => ['onOutputRendered', 1000]
             ]);
         }
 
