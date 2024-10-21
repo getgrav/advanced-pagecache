@@ -36,7 +36,7 @@ class AdvancedPageCachePlugin extends Plugin
      * Return `true` if the page has no extension, or has the default page extension.
      * Return `false` if for example is a RSS version of the page
      */
-    private function isValidExtension():bool
+    private function isValidExtension() : bool
     {
         /** @var Uri $uri */
         $uri = $this->grav['uri'];
