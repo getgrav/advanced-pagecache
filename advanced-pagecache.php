@@ -79,7 +79,7 @@ class AdvancedPageCachePlugin extends Plugin
                 ($config['disabled_with_params'] && !empty($params)) ||
                 ($config['disabled_with_query'] && !empty($query)) ||
                 ($config['disabled_on_login'] && ($user && $user["authenticated"])) ||
-                in_array($route, (array) $config['blacklist'], true)
+                in_array($route, (array)$config['blacklist'], true)
             ) {
                 return;
             }
