@@ -72,6 +72,7 @@ class AdvancedPageCachePlugin extends Plugin
         if ($this->isAdmin() || !$this->isValidExtension()) {
             return;
         }
+
         // If this url is not whitelisted try some other tests
         if (!in_array($route, (array)$config['whitelist'], true)) {
             // do not run in these scenarios
@@ -92,6 +93,7 @@ class AdvancedPageCachePlugin extends Plugin
         } else {
             $this->pagecache_key = md5('adv-pc-' . $lang . $full_route);
         }
+
         // TODO: remove when minimum required Grav >= 1.7.15
         if (version_compare($this->grav->getVersion(), '1.7.15', '<')) {
             $this->enable([
