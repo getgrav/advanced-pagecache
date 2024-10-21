@@ -15,6 +15,8 @@ use RocketTheme\Toolbox\Event\Event;
  */
 class AdvancedPageCachePlugin extends Plugin
 {
+    public const CACHE_ENABLED_KEY = 'cache_enable';
+
     /** @var Config $config */
     protected $config;
     /** @var string */
@@ -26,7 +28,7 @@ class AdvancedPageCachePlugin extends Plugin
     public static function getSubscribedEvents()
     {
         return [
-            'onPluginsInitialized' => ['onPluginsInitialized', 1000]
+            'onPluginsInitialized' => ['onPluginsInitialized', 1000],
         ];
     }
 
@@ -34,7 +36,7 @@ class AdvancedPageCachePlugin extends Plugin
      * Return `true` if the page has no extension, or has the default page extension.
      * Return `false` if for example is a RSS version of the page
      */
-    private function isValidExtension() : bool
+    private function isValidExtension(): bool
     {
         /** @var Uri $uri */
         $uri = $this->grav['uri'];
@@ -44,7 +46,7 @@ class AdvancedPageCachePlugin extends Plugin
             return true;
         }
 
-        $disabled_extensions = (array)$this->grav['config']->get('plugins.advanced-pagecache.disabled_extensions');
+        $disabled_extensions = (array) $this->grav['config']->get('plugins.advanced-pagecache.disabled_extensions');
 
         return !in_array($extension, $disabled_extensions, true);
     }
@@ -57,7 +59,7 @@ class AdvancedPageCachePlugin extends Plugin
         /** @var Uri $uri */
         $uri = $this->grav['uri'];
 
-        $config = (array)$this->grav['config']->get('plugins.advanced-pagecache');
+        $config = (array) $this->grav['config']->get('plugins.advanced-pagecache');
 
         $full_route = $uri->uri();
         $route = str_replace($uri->baseIncludingLanguage(), '', $full_route);
@@ -70,15 +72,14 @@ class AdvancedPageCachePlugin extends Plugin
         if ($this->isAdmin() || !$this->isValidExtension()) {
             return;
         }
-
         // If this url is not whitelisted try some other tests
-        if (!in_array($route, (array)$config['whitelist'], true)) {
+        if (!in_array($route, (array) $config['whitelist'], true)) {
             // do not run in these scenarios
             if (
                 ($config['disabled_with_params'] && !empty($params)) ||
                 ($config['disabled_with_query'] && !empty($query)) ||
                 ($config['disabled_on_login'] && ($user && $user["authenticated"])) ||
-                in_array($route, (array)$config['blacklist'], true)
+                in_array($route, (array) $config['blacklist'], true)
             ) {
                 return;
             }
@@ -91,15 +92,14 @@ class AdvancedPageCachePlugin extends Plugin
         } else {
             $this->pagecache_key = md5('adv-pc-' . $lang . $full_route);
         }
-
         // TODO: remove when minimum required Grav >= 1.7.15
         if (version_compare($this->grav->getVersion(), '1.7.15', '<')) {
             $this->enable([
-                'onOutputGenerated' => ['onOutputGenerated', -1000]
+                'onOutputGenerated' => ['onOutputGenerated', -1000],
             ]);
         } else {
             $this->enable([
-                'onOutputRendered' => ['onOutputRendered', 1000]
+                'onOutputRendered' => ['onOutputRendered', 1000],
             ]);
         }
 
@@ -126,6 +126,10 @@ class AdvancedPageCachePlugin extends Plugin
         $page = $this->grav['page'];
         $html = $this->grav->output;
 
+        if($this->isPageCachingDisabled($page)) {
+            return;
+        }
+
         $item = [
             'code' => $page->httpResponseCode(),
             'headers' => $page->httpHeaders(),
@@ -144,6 +148,10 @@ class AdvancedPageCachePlugin extends Plugin
         $page = $event['page'];
         $html = $event['output'];
 
+        if($this->isPageCachingDisabled($page)) {
+            return;
+        }
+
         $item = [
             'code' => $page->httpResponseCode(),
             'headers' => $page->httpHeaders(),
@@ -151,5 +159,18 @@ class AdvancedPageCachePlugin extends Plugin
         ];
 
         $this->grav['cache']->save($this->pagecache_key, $item);
+    }
+
+    private function isPageCachingDisabled(PageInterface $page): bool
+    {
+        $header = $page->header();
+        if (property_exists($header, self::CACHE_ENABLED_KEY)) {
+            if ($header->{self::CACHE_ENABLED_KEY} === false) {
+                // do not cache
+                return true;
+            }
+        }
+
+        return false;
     }
 }
